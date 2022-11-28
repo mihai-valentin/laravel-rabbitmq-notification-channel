@@ -2,24 +2,25 @@
 
 declare(strict_types=1);
 
-namespace LaravelRabbitmqNotifications\Broker;
+namespace LaravelRabbitmqNotificationChannel\Broker;
 
-use LaravelRabbitmqNotifications\ErrorCodes\BrokerConnectionErrorCodes;
-use LaravelRabbitmqNotifications\Exception\BrokerConnectionException;
+use LaravelRabbitmqNotificationChannel\Exception\BrokerConnectionException;
 use Exception;
+use LaravelRabbitmqNotificationChannel\Exception\CannotCloseBrokerConnectionException;
+use LaravelRabbitmqNotificationChannel\Exception\CannotOpenBrokerConnectionException;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
-final class RabbitMQConnection
+class RabbitMQConnection
 {
     private AMQPStreamConnection $connection;
 
     public function __construct(
-        private readonly string $host,
-        private readonly string $port,
-        private readonly string $user,
-        private readonly string $password,
+        protected readonly string $host,
+        protected readonly int $port,
+        protected readonly string $user,
+        protected readonly string $password,
     ) {
     }
 
@@ -41,9 +42,9 @@ final class RabbitMQConnection
     }
 
     /**
-     * @throws BrokerConnectionException
+     * @throws CannotOpenBrokerConnectionException
      */
-    private function openConnection(): void
+    protected function openConnection(): void
     {
         try {
             $this->connection = new AMQPStreamConnection(
@@ -53,32 +54,28 @@ final class RabbitMQConnection
                 $this->password,
             );
         } catch (Exception) {
-            throw new BrokerConnectionException(
-                BrokerConnectionErrorCodes::CANNOT_CONNECT
-            );
+            throw new CannotOpenBrokerConnectionException();
         }
     }
 
     /**
-     * @throws BrokerConnectionException
+     * @throws CannotCloseBrokerConnectionException
      */
-    private function closeConnection(): void
+    protected function closeConnection(): void
     {
         try {
             $this->connection->close();
         } catch (Exception) {
-            throw new BrokerConnectionException(
-                BrokerConnectionErrorCodes::CANNOT_CLOSE_CONNECTION
-            );
+            throw new CannotCloseBrokerConnectionException();
         }
     }
 
-    private function declareDurableQueue(AMQPChannel $channel, string $name): void
+    protected function declareDurableQueue(AMQPChannel $channel, string $name): void
     {
         $channel->queue_declare($name, durable: true, auto_delete: false);
     }
 
-    private function publishBasicMessage(AMQPChannel $channel, AMQPMessage $message, string $queueName): void
+    protected function publishBasicMessage(AMQPChannel $channel, AMQPMessage $message, string $queueName): void
     {
         $channel->basic_publish($message, routing_key: $queueName);
     }

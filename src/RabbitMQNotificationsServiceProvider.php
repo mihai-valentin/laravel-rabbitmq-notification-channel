@@ -2,43 +2,27 @@
 
 declare(strict_types=1);
 
-namespace LaravelRabbitmqNotifications;
+namespace LaravelRabbitmqNotificationChannel;
 
-use Illuminate\Support\Facades\Config;
-use LaravelRabbitmqNotifications\Broker\RabbitMQConnection;
-use LaravelRabbitmqNotifications\Broker\RabbitMQPublisher;
-use LaravelRabbitmqNotifications\Channel\RabbitMQNotificationsChannel;
-use LaravelRabbitmqNotifications\Mapper\MessageDataMapper;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\DeferrableProvider;
+use Illuminate\Notifications\ChannelManager;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
+use LaravelRabbitmqNotificationChannel\Broker\RabbitMQConnection;
+use LaravelRabbitmqNotificationChannel\Broker\RabbitMQPublisher;
+use LaravelRabbitmqNotificationChannel\Channel\RabbitMQChannel;
+use LaravelRabbitmqNotificationChannel\Mapper\RabbitMQMessageMapper;
 
 final class RabbitMQNotificationsServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     public function register(): void
     {
-        $this->app->singleton(RabbitMQConnection::class, static function () {
-            return new RabbitMQConnection(
-                host: Config::get('notifications_microservice.rabbit_mq.host'),
-                port: Config::get('notifications_microservice.rabbit_mq.port'),
-                user: Config::get('notifications_microservice.rabbit_mq.user'),
-                password: Config::get('notifications_microservice.rabbit_mq.password'),
-            );
-        });
+        $this->publishConfig();
 
-        $this->app->bind(RabbitMQPublisher::class, static function (Application $app) {
-            return new RabbitMQPublisher(
-                $app->make(RabbitMQConnection::class),
-                Config::get('notifications_microservice.queue_name'),
-                new MessageDataMapper(),
-            );
-        });
-
-        $this->app->bind(RabbitMQNotificationsChannel::class, function ($app) {
-            $retriesCount = (int) Config::get('notifications_microservice.send_retries_count');
-
-            return new RabbitMQNotificationsChannel($app->make(RabbitMQPublisher::class), $retriesCount);
-        });
+        $this->registerChannels();
+        $this->extendNotificationChannelManager();
     }
 
     /**
@@ -47,7 +31,52 @@ final class RabbitMQNotificationsServiceProvider extends ServiceProvider impleme
     public function provides(): array
     {
         return [
-            RabbitMQNotificationsChannel::class,
+            RabbitMQChannel::class,
         ];
+    }
+
+    private function publishConfig(): void
+    {
+        if (!$this->app->runningInConsole()) {
+            return;
+        }
+
+        $configPath = __DIR__ . '/../config/rabbitmq-notification-channel.php';
+        $publishPath = $this->app->configPath('rabbitmq-notification-channel.php');
+
+        $this->publishes([$configPath => $publishPath], 'rabbitmq-notification-channel');
+    }
+
+    private function registerChannels(): void
+    {
+        $this->app->bind(RabbitMQConnection::class, static function () {
+            return new RabbitMQConnection(
+                Config::get('rabbitmq-notification-channel.rabbitmq.host'),
+                Config::get('rabbitmq-notification-channel.rabbitmq.port'),
+                Config::get('rabbitmq-notification-channel.rabbitmq.user'),
+                Config::get('rabbitmq-notification-channel.rabbitmq.password'),
+            );
+        });
+
+        $this->app->bind(RabbitMQPublisher::class, static function (Application $app) {
+            $defaultQueue = Config::get('rabbitmq-notification-channel.default_queue');
+
+            return new RabbitMQPublisher(
+                $defaultQueue,
+                $app->make(RabbitMQConnection::class),
+                $app->make(RabbitMQMessageMapper::class),
+            );
+        });
+
+        $this->app->bind(RabbitMQChannel::class, function ($app) {
+            return new RabbitMQChannel($app->make(RabbitMQPublisher::class));
+        });
+    }
+
+    private function extendNotificationChannelManager(): void
+    {
+        Notification::resolved(static function (ChannelManager $service) {
+            $service->extend('rabbitmq', static fn($app) => $app->make(RabbitMQChannel::class));
+        });
     }
 }

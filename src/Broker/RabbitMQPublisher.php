@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace LaravelRabbitmqNotifications\Broker;
+namespace LaravelRabbitmqNotificationChannel\Broker;
 
-use LaravelRabbitmqNotifications\Data\MessageData;
-use LaravelRabbitmqNotifications\Mapper\MessageDataMapperInterface;
+use LaravelRabbitmqNotificationChannel\Mapper\MessageMapper;
+use LaravelRabbitmqNotificationChannel\Message\Message;
 
-final class RabbitMQPublisher
+final class RabbitMQPublisher implements Publisher
 {
     public function __construct(
+        private readonly string $defaultQueue,
         private readonly RabbitMQConnection $connection,
-        private readonly string $queueName,
-        private readonly MessageDataMapperInterface $messageDataMapper,
+        private readonly MessageMapper $messageDataMapper,
     ) {
     }
 
-    public function publishMessage(MessageData $messageData): void
+    public function publishMessage(Message $message): void
     {
-        $AMQPMessage = $this->messageDataMapper->mapMessageDataToAMQPMessage($messageData);
+        $AMQPMessage = $this->messageDataMapper->mapToAMQPMessage($message);
 
-        $this->connection->publishMessage($AMQPMessage, $this->queueName);
+        $this->connection->publishMessage($AMQPMessage, $this->defaultQueue);
     }
 }

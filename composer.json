@@ -1,18 +1,24 @@
 {
-    "name": "mihai-valentin/laravel-rabbitmq-notifications",
-    "description": "Simple Laravel RabbitMQ notifications channel",
+    "name": "mihai-valentin/laravel-rabbitmq-notification-channel",
+    "description": "Simple Laravel RabbitMQ Notification Channel",
     "type": "library",
     "license": "MIT",
+    "keywords": [
+        "laravel",
+        "rabbitmq",
+        "notification",
+        "channel"
+    ],
     "autoload": {
         "psr-4": {
-            "MihaiValentin\\LaravelRabbitmqNotifications\\": "src/"
+            "LaravelRabbitmqNotificationChannel\\": "src/"
         }
     },
     "minimum-stability": "dev",
     "require": {
         "php-amqplib/php-amqplib": "^2.0",
-        "illuminate/contracts": "10.x-dev",
-        "illuminate/notifications": "10.x-dev",
-        "illuminate/support": "10.x-dev"
+        "illuminate/contracts": "^9.0",
+        "illuminate/support": "^9.0",
+        "illuminate/notifications": "^9.0"
     }
 }

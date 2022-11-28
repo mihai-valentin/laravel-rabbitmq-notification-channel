@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace LaravelRabbitmqNotifications;
+namespace LaravelRabbitmqNotificationChannel;
 
-use LaravelRabbitmqNotifications\Data\MessageData;
+use LaravelRabbitmqNotificationChannel\Message\Message;
 
 interface RabbitMQNotification
 {
-    public function toNotificationsMicroservice($notifiable): MessageData;
+    public function toNotificationsMicroservice($notifiable): Message;
 }
