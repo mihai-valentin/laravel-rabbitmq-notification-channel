@@ -15,7 +15,7 @@ use LaravelRabbitmqNotificationChannel\Broker\RabbitMQPublisher;
 use LaravelRabbitmqNotificationChannel\Channel\RabbitMQChannel;
 use LaravelRabbitmqNotificationChannel\Mapper\RabbitMQMessageMapper;
 
-final class RabbitMQNotificationsServiceProvider extends ServiceProvider implements DeferrableProvider
+final class RabbitMQNotificationServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     public function register(): void
     {
@@ -75,8 +75,8 @@ final class RabbitMQNotificationsServiceProvider extends ServiceProvider impleme
 
     private function extendNotificationChannelManager(): void
     {
-        Notification::resolved(static function (ChannelManager $service) {
-            $service->extend('rabbitmq', static fn($app) => $app->make(RabbitMQChannel::class));
+        Notification::resolved(static function (ChannelManager $channelManager) {
+            $channelManager->extend('rabbitmq', static fn($app) => $app->make(RabbitMQChannel::class));
         });
     }
 }

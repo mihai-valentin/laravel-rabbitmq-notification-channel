@@ -8,5 +8,5 @@ use LaravelRabbitmqNotificationChannel\RabbitMQNotification;
 
 interface Channel
 {
-    public function send($notifiable, RabbitMQNotification $notification): bool;
+    public function send($notifiable, RabbitMQNotification $notification): void;
 }

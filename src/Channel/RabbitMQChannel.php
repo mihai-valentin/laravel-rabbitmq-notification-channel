@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace LaravelRabbitmqNotificationChannel\Channel;
 
+use Illuminate\Support\Facades\Event;
 use LaravelRabbitmqNotificationChannel\Broker\RabbitMQPublisher;
+use LaravelRabbitmqNotificationChannel\Event\RabbitMQNotificationFailed;
 use LaravelRabbitmqNotificationChannel\Exception\BrokerConnectionException;
 use LaravelRabbitmqNotificationChannel\RabbitMQNotification;
 
@@ -14,18 +16,14 @@ final class RabbitMQChannel implements Channel
     {
     }
 
-    public function send($notifiable, RabbitMQNotification $notification): bool
+    public function send($notifiable, RabbitMQNotification $notification): void
     {
-        $message = $notification->toNotificationsMicroservice($notifiable);
+        $message = $notification->toRabbitMQ($notifiable);
 
         try {
             $this->publisher->publishMessage($message);
-
-            return true;
         } catch (BrokerConnectionException $exception) {
-            // Event::dispatch(...);
+            Event::dispatch(new RabbitMQNotificationFailed($exception));
         }
-
-        return false;
     }
 }

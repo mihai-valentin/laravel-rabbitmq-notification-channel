@@ -1,0 +1,11 @@
+parameters:
+    level: 8
+    paths:
+        - src
+    ignoreErrors:
+        - message: '#Method LaravelRabbitmqNotificationChannel\\Channel\\Channel::send\(\) has parameter \$notifiable with no type specified.#'
+          path: src/Channel/Channel.php
+        - message: '#Method LaravelRabbitmqNotificationChannel\\Channel\\RabbitMQChannel::send\(\) has parameter \$notifiable with no type specified.#'
+          path: src/Channel/RabbitMQChannel.php
+        - message: '#Method LaravelRabbitmqNotificationChannel\\RabbitMQNotification::toRabbitMQ\(\) has parameter \$notifiable with no type specified.#'
+          path: src/RabbitMQNotification.php

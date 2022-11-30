@@ -1,2 +1,6 @@
 .idea
 vendor
+
+.phpunit.result.cache
+
+phpunit-coverage-report

@@ -12,13 +12,16 @@ use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
+/**
+ * @codeCoverageIgnore
+ */
 class RabbitMQConnection
 {
     private AMQPStreamConnection $connection;
 
     public function __construct(
         protected readonly string $host,
-        protected readonly int $port,
+        protected readonly string $port,
         protected readonly string $user,
         protected readonly string $password,
     ) {

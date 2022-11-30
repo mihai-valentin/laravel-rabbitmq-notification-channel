@@ -6,5 +6,8 @@ namespace LaravelRabbitmqNotificationChannel\Message;
 
 interface Message
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function getPayload(): array;
 }

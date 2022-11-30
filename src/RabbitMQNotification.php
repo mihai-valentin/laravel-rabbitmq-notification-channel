@@ -8,5 +8,5 @@ use LaravelRabbitmqNotificationChannel\Message\Message;
 
 interface RabbitMQNotification
 {
-    public function toNotificationsMicroservice($notifiable): Message;
+    public function toRabbitMQ($notifiable): Message;
 }
