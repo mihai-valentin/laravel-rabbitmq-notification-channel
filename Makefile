@@ -1,10 +1,10 @@
-test-and-check: test check
+test: phpunit phpstan
 
-test:
+phpunit:
 	vendor/bin/phpunit
+
+phpstan:
+	vendor/bin/phpstan --xdebug
 
 coverage:
 	vendor/bin/phpunit --coverage-filter=src --coverage-html=./phpunit-coverage-report
-
-check:
-	vendor/bin/phpstan --xdebug

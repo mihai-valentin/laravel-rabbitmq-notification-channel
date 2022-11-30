@@ -10,9 +10,12 @@ use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\ServiceProvider;
+use LaravelRabbitmqNotificationChannel\Broker\Publisher;
 use LaravelRabbitmqNotificationChannel\Broker\RabbitMQConnection;
 use LaravelRabbitmqNotificationChannel\Broker\RabbitMQPublisher;
+use LaravelRabbitmqNotificationChannel\Channel\Channel;
 use LaravelRabbitmqNotificationChannel\Channel\RabbitMQChannel;
+use LaravelRabbitmqNotificationChannel\Mapper\MessageMapper;
 use LaravelRabbitmqNotificationChannel\Mapper\RabbitMQMessageMapper;
 
 final class RabbitMQNotificationServiceProvider extends ServiceProvider implements DeferrableProvider
@@ -49,6 +52,8 @@ final class RabbitMQNotificationServiceProvider extends ServiceProvider implemen
 
     private function registerChannels(): void
     {
+        $this->app->bind(MessageMapper::class, RabbitMQMessageMapper::class);
+
         $this->app->bind(RabbitMQConnection::class, static function () {
             return new RabbitMQConnection(
                 Config::get('rabbitmq-notification-channel.rabbitmq.host'),
@@ -58,19 +63,15 @@ final class RabbitMQNotificationServiceProvider extends ServiceProvider implemen
             );
         });
 
-        $this->app->bind(RabbitMQPublisher::class, static function (Application $app) {
-            $defaultQueue = Config::get('rabbitmq-notification-channel.default_queue');
-
+        $this->app->bind(Publisher::class, static function (Application $app) {
             return new RabbitMQPublisher(
-                $defaultQueue,
+                Config::get('rabbitmq-notification-channel.default_queue'),
                 $app->make(RabbitMQConnection::class),
-                $app->make(RabbitMQMessageMapper::class),
+                $app->make(MessageMapper::class)
             );
         });
 
-        $this->app->bind(RabbitMQChannel::class, function ($app) {
-            return new RabbitMQChannel($app->make(RabbitMQPublisher::class));
-        });
+        $this->app->bind(Channel::class, RabbitMQChannel::class);
     }
 
     private function extendNotificationChannelManager(): void
