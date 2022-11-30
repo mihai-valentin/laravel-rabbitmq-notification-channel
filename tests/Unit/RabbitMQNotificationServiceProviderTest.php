@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
-use LaravelRabbitmqNotificationChannel\Channel\RabbitMQChannel;
-use LaravelRabbitmqNotificationChannel\Message\Message;
-use LaravelRabbitmqNotificationChannel\RabbitMQNotification;
 use LaravelRabbitmqNotificationChannel\RabbitMQNotificationServiceProvider;
 use Orchestra\Testbench\TestCase;
 use Tests\Fake\FakeMessage;
 use Tests\Fake\FakeNotifiable;
+use Tests\Fake\FakeRabbitMQNotification;
 
 final class RabbitMQNotificationServiceProviderTest extends TestCase
 {
@@ -21,26 +18,41 @@ final class RabbitMQNotificationServiceProviderTest extends TestCase
         ];
     }
 
-    public function test(): void
+    protected function resolveApplicationConfiguration($app): void
+    {
+        parent::resolveApplicationConfiguration($app);
+
+        $config = include __DIR__ . '/../../config/rabbitmq-notification-channel.php';
+
+        $app['config']->set('rabbitmq-notification-channel', $config);
+    }
+
+    public function testWillSendNotificationUsingFakedNotificationsSuccessfully(): void
     {
         NotificationFacade::fake();
 
-        $notification = new class extends Notification implements RabbitMQNotification
-        {
-            public function via($notifiable): array
-            {
-                return [RabbitMQChannel::class];
-            }
-
-            public function toRabbitMQ($notifiable): Message
-            {
-                return new FakeMessage('test');
-            }
-        };
+        $message = new FakeMessage('test');
+        $notification = new FakeRabbitMQNotification($message);
 
         $notifiable = new FakeNotifiable();
 
         NotificationFacade::send($notifiable, $notification);
         NotificationFacade::assertSentTo($notifiable, get_class($notification));
+    }
+
+    public function testWillSendNotificationUsingRealNotificationsSuccessfully(): void
+    {
+        $message = new FakeMessage('test');
+        $notification = new FakeRabbitMQNotification($message);
+        $notifiable = new FakeNotifiable();
+
+        try {
+            NotificationFacade::send($notifiable, $notification);
+            $exceptionThrown = false;
+        } catch (Exception) {
+            $exceptionThrown = true;
+        }
+
+        self::assertFalse($exceptionThrown);
     }
 }
