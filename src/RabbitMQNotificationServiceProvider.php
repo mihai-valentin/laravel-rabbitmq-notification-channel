@@ -15,6 +15,8 @@ use LaravelRabbitmqNotificationChannel\Broker\RabbitMQConnection;
 use LaravelRabbitmqNotificationChannel\Broker\RabbitMQPublisher;
 use LaravelRabbitmqNotificationChannel\Channel\Channel;
 use LaravelRabbitmqNotificationChannel\Channel\RabbitMQChannel;
+use LaravelRabbitmqNotificationChannel\Console\PublishCommand;
+use LaravelRabbitmqNotificationChannel\Console\RabbitMQNotificationMakeCommand;
 use LaravelRabbitmqNotificationChannel\Mapper\MessageMapper;
 use LaravelRabbitmqNotificationChannel\Mapper\RabbitMQMessageMapper;
 
@@ -22,9 +24,10 @@ final class RabbitMQNotificationServiceProvider extends ServiceProvider implemen
 {
     public function register(): void
     {
-        $this->publishConfig();
-
+        $this->registerCommands();
+        $this->registerConfig();
         $this->registerChannels();
+
         $this->extendNotificationChannelManager();
     }
 
@@ -38,7 +41,19 @@ final class RabbitMQNotificationServiceProvider extends ServiceProvider implemen
         ];
     }
 
-    private function publishConfig(): void
+    public function registerCommands(): void
+    {
+        if (!$this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->commands([
+            PublishCommand::class,
+            RabbitMQNotificationMakeCommand::class,
+        ]);
+    }
+
+    private function registerConfig(): void
     {
         if (!$this->app->runningInConsole()) {
             return;

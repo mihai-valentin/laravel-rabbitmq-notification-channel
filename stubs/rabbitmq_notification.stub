@@ -1,0 +1,28 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Notification;
+use LaravelRabbitmqNotificationChannel\Message\Message;
+use LaravelRabbitmqNotificationChannel\RabbitMQNotification;
+
+class {{ class }} extends Notification implements RabbitMQNotification
+{
+    use Queueable;
+
+    public function __construct()
+    {
+    }
+
+    public function via($notifiable): array
+    {
+        return ['rabbitmq'];
+    }
+
+    public function toRabbitMQ($notifiable): Message
+    {
+        // TODO: Implement toRabbitMQ() method.
+    }
+}
