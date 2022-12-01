@@ -85,6 +85,13 @@ abstraction. You can extend it to overwrite the message delivery scenario.
 
 ## Code of Conduct
 
+In order to ensure that the community is welcoming to all, please review and abide by the [Code of Conduct](https://github.com/mihai-valentin/laravel-rabbitmq-notification-channel/blob/master/CODE_OF_CONDUCT.md).
+
 ## Contributing
 
+TBD;
+
 ## License
+
+The MIT License (MIT). Please see [License File](https://github.com/mihai-valentin/laravel-rabbitmq-notification-channel/blob/master/LICENSE.md) for more information.
+
