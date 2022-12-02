@@ -40,7 +40,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "LaravelRabbitmqNotificationChannel\\Channel\\RabbitMQChannel"
+                "LaravelRabbitmqNotificationChannel\\RabbitMQNotificationServiceProvider"
             ]
         }
     },
