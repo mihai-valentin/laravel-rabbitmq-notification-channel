@@ -92,7 +92,7 @@ final class RabbitMQNotificationServiceProvider extends ServiceProvider implemen
     private function extendNotificationChannelManager(): void
     {
         Notification::resolved(static function (ChannelManager $channelManager) {
-            $channelManager->extend('rabbitmq', static fn($app) => $app->make(Channel::class));
+            $channelManager->extend('rabbitmq', static fn ($app) => $app->make(Channel::class));
         });
     }
 }
