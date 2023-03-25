@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+namespace Tests\Integration;
+
+use Exception;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
 use LaravelRabbitmqNotificationChannel\RabbitMQNotificationServiceProvider;
 use Orchestra\Testbench\TestCase;
@@ -9,7 +12,7 @@ use Tests\Fake\FakeMessage;
 use Tests\Fake\FakeNotifiable;
 use Tests\Fake\FakeRabbitMQNotification;
 
-final class RabbitMQNotificationServiceProviderTest extends TestCase
+final class SendMessageUsingRealRabbitMQTest extends TestCase
 {
     protected function getPackageProviders($app): array
     {
@@ -27,16 +30,19 @@ final class RabbitMQNotificationServiceProviderTest extends TestCase
         $app['config']->set('rabbitmq-notification-channel', $config);
     }
 
-    public function testWillSendNotificationUsingFakedNotificationsSuccessfully(): void
+    public function testWillSendNotificationUsingRealNotificationsSuccessfully(): void
     {
-        NotificationFacade::fake();
-
         $message = new FakeMessage('test');
         $notification = new FakeRabbitMQNotification($message);
-
         $notifiable = new FakeNotifiable();
 
-        NotificationFacade::send($notifiable, $notification);
-        NotificationFacade::assertSentTo($notifiable, get_class($notification));
+        try {
+            NotificationFacade::send($notifiable, $notification);
+            $exceptionThrown = false;
+        } catch (Exception) {
+            $exceptionThrown = true;
+        }
+
+        self::assertFalse($exceptionThrown);
     }
 }
