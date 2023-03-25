@@ -8,6 +8,7 @@ use LaravelRabbitmqNotificationChannel\Broker\RabbitMQPublisher;
 use LaravelRabbitmqNotificationChannel\Channel\RabbitMQChannel;
 use LaravelRabbitmqNotificationChannel\Event\RabbitMQNotificationFailed;
 use LaravelRabbitmqNotificationChannel\Exception\BrokerConnectionException;
+use LaravelRabbitmqNotificationChannel\Exception\RabbitMQChannelException;
 use LaravelRabbitmqNotificationChannel\Mapper\RabbitMQMessageMapper;
 use LaravelRabbitmqNotificationChannel\Message\Message;
 use Orchestra\Testbench\TestCase;
@@ -49,6 +50,8 @@ final class RabbitMQChannelTest extends TestCase
     public function testWillDispatchRabbitMQNotificationFailedEventWhileSendingNotificationUsingBrokenConnection(): void
     {
         Event::fake();
+
+        $this->expectException(RabbitMQChannelException::class);
 
         $notification = new FakeRabbitMQNotification(new FakeEmptyMessage());
 

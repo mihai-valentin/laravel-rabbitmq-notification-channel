@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Event;
 use LaravelRabbitmqNotificationChannel\Broker\Publisher;
 use LaravelRabbitmqNotificationChannel\Event\RabbitMQNotificationFailed;
 use LaravelRabbitmqNotificationChannel\Exception\BrokerConnectionException;
+use LaravelRabbitmqNotificationChannel\Exception\RabbitMQChannelException;
 use LaravelRabbitmqNotificationChannel\RabbitMQNotification;
 
 final class RabbitMQChannel implements Channel
@@ -24,6 +25,7 @@ final class RabbitMQChannel implements Channel
             $this->publisher->publishMessage($message);
         } catch (BrokerConnectionException $exception) {
             Event::dispatch(new RabbitMQNotificationFailed($exception));
+            throw new RabbitMQChannelException("Message publishing failed", previous: $exception);
         }
     }
 }

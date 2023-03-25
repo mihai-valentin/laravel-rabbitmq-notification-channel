@@ -1,0 +1,9 @@
+version: '3.3'
+
+services:
+  lrnc-rabbitmq:
+    container_name: lrnc-rabbitmq
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
