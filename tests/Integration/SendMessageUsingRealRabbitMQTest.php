@@ -12,7 +12,7 @@ use Tests\Fake\FakeMessage;
 use Tests\Fake\FakeNotifiable;
 use Tests\Fake\FakeRabbitMQNotification;
 
-final class SendAMessageUsingRealRabbitMQTest extends TestCase
+final class SendMessageUsingRealRabbitMQTest extends TestCase
 {
     protected function getPackageProviders($app): array
     {
